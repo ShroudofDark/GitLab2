@@ -14,7 +14,7 @@ import static org.hamcrest.Matchers.*;
  */
 public class VocabTest {
                   
-	//Test Comment
+	//Test Comment 2
 	
     @Test
     public void TestConstructor() {
