@@ -10,7 +10,7 @@ java {
 
 repositories {
 	mavenCentral()
-	//jcenter() got depreciation warnings use this
+	//jcenter() //got depreciation warnings use this
 }
 
 dependencies {
@@ -52,12 +52,12 @@ task reports (dependsOn: ['javadoc', 'test']){
 
 task copyDocs (type: Copy, dependsOn: ['reports', 'clonePages']) {
 	from "build/docs/"
-	into "$buildDir/gh-pages"
+	into "$buildDir/gh-pages/docs/"
 }
 
 task copyReports (type: Copy, dependsOn: ['reports', 'clonePages']) {
 	from "build/reports/"
-	into "$buildDir/gh-pages"
+	into "$buildDir/gh-pages/reports"
 }
 
 task deployReports (dependsOn: ['reports', 'copyDocs', 'copyReports']){
@@ -69,11 +69,14 @@ task deployReports (dependsOn: ['reports', 'copyDocs', 'copyReports']){
 		def grgit = git.open {
 			dir = pagesDir + "/.git"
 		}
-		grgit.add (update: false, patterns: ['reports/'])
-		grgit.add (update: true, patterns: ['reports/'])
-		/*grgit.commit {
+		grgit.checkout {
+            branch = 'gh-pages'
+        }
+		grgit.add (patterns: ['reports/'], update: false)
+		grgit.add (patterns: ['reports/'], update: true)
+		grgit.commit {
 			message = "Updating web pages"
-		} */
+		}
 		
 		grgit.close();
 	}
