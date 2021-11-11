@@ -24,7 +24,7 @@ test {
 }
 
 //Report Website Creation stuff
-
+/* I couldn't get this process as a whole to work even with tweaking and went to class mate for assistance
 task clonePages() {
     doLast {  
 		mkdir 'build/gh-pages'
@@ -65,21 +65,66 @@ task deployReports (dependsOn: ['reports', 'copyDocs', 'copyReports']){
 	description  'Copies reports to the gh-pages branch in preparation for a future push to GitHub'
 	doLast {
 		def pagesDir = "$buildDir/gh-pages"
-		printf pagesDir
 		def grgit = git.open {
 			dir = pagesDir + "/.git"
 		}
-		grgit.checkout {
-            branch = 'gh-pages'
-        }
-		grgit.add (patterns: ['reports/'], update: false)
-		grgit.add (patterns: ['reports/'], update: true)
+		//grgit.add (patterns: ['reports/'], update: false)
+		//grgit.add (patterns: ['reports/'], update: true)
+		grgit.add (update: false, patterns: ['reports/'])
+        grgit.add (update: true, patterns: ['reports/'])
 		grgit.commit {
 			message = "Updating web pages"
 		}
 		
 		grgit.close();
 	}
+}
+
+build.dependsOn deployReports */
+
+// Commands to run programs as subprocesses adapted from code at
+// https://www.baeldung.com/run-shell-command-in-java.
+//
+// Had help from John Hicks because above stuff wasn't working
+
+task reports (dependsOn: ['javadoc', 'test']) {
+    description 'Generate reports for this project'
+}
+
+task copyDocs (type: Copy, dependsOn: ['reports', 'gitWorktree']) {
+    from 'build/docs'
+    into '../_site/docs'
+}
+
+task copyReports (type: Copy, dependsOn: ['reports', 'gitWorktree']) {
+    from 'build/reports'
+    into '../_site/reports'
+}
+
+task gitWorktree() {
+    description 'Adds a worktree for the gh-pages branch to the _site directory'
+    Process process;
+    process = Runtime.getRuntime()
+        .exec(String.format("git worktree add " + System.getProperty("user.dir") + "/imitation/	gh-pages"));
+    int exitCode = process.waitFor();
+}
+
+task deployReports (dependsOn: ['reports', 'gitWorktree', 'copyDocs', 'copyReports' ]) {
+    description 'Adds and commits the project website assets in the _site worktree'
+    doLast {
+        ProcessBuilder addCommandbuilder = new ProcessBuilder();
+		//System.out.println(System.getProperty("user.dir").toString())
+        addCommandbuilder.directory(new File(System.getProperty("user.dir") + "/_site")); // TODO: windows?
+        addCommandbuilder.command("git", "add", ".");
+        Process addProcess = addCommandbuilder.start();
+        int addExitCode = addProcess.waitFor();
+
+        ProcessBuilder commitCommandBuilder = new ProcessBuilder();
+        commitCommandBuilder.directory(new File(System.getProperty("user.dir") + "/_site")); // TODO: windows?
+        commitCommandBuilder.command("git", "commit", "-m", "Updates website from Gradle task");
+        Process commitProcess = commitCommandBuilder.start();
+        int commitExitCode = commitProcess.waitFor();
+    }
 }
 
 build.dependsOn deployReports
