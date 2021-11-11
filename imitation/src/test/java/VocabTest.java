@@ -18,7 +18,7 @@ public class VocabTest {
 	
     @Test
     public void TestConstructor() {
-    	fail(); //Adding this to mess around with git stuff
+    	//fail(); //Adding this to mess around with git stuff
     	//Construct a new word
     	Vocabulary v = new Vocabulary();
     	

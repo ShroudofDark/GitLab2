@@ -114,16 +114,23 @@ task deployReports (dependsOn: ['reports', 'gitWorktree', 'copyDocs', 'copyRepor
     doLast {
         ProcessBuilder addCommandbuilder = new ProcessBuilder();
 		//System.out.println(System.getProperty("user.dir").toString())
-        addCommandbuilder.directory(new File(System.getProperty("user.dir") + "/_site")); // TODO: windows?
+        addCommandbuilder.directory(new File(System.getProperty("user.dir") + "/_site"));
         addCommandbuilder.command("git", "add", ".");
         Process addProcess = addCommandbuilder.start();
         int addExitCode = addProcess.waitFor();
 
         ProcessBuilder commitCommandBuilder = new ProcessBuilder();
-        commitCommandBuilder.directory(new File(System.getProperty("user.dir") + "/_site")); // TODO: windows?
+        commitCommandBuilder.directory(new File(System.getProperty("user.dir") + "/_site"));
         commitCommandBuilder.command("git", "commit", "-m", "Updates website from Gradle task");
         Process commitProcess = commitCommandBuilder.start();
         int commitExitCode = commitProcess.waitFor();
+		
+		//Tries to auto push website
+		ProcessBuilder pushCommandBuilder = new ProcessBuilder();
+        pushCommandBuilder.directory(new File(System.getProperty("user.dir") + "/_site"));
+        pushCommandBuilder.command("git", "push", "--all");
+        Process pushProcess = pushCommandBuilder.start();
+        int pushExitCode = pushProcess.waitFor();
     }
 }
 
